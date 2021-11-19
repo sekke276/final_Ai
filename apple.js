@@ -38,11 +38,11 @@ class Apple {
     }
 
     show() {
-        fill(255, 0, 0);
+        fill("blue");
         strokeWeight(0);
-        rect(this.x * 30 + 10, this.y * 30, 10, 10);
-        rect(this.x * 30, this.y * 30 + 10, 10, 10);
+        rect(this.x * 30 + 10, this.y * 30, 10, 10, 30);
+        rect(this.x * 30, this.y * 30 + 10, 10, 10, 30);
         rect(this.x * 30 + 20, this.y * 30 + 10, 10, 10);
-        rect(this.x * 30 + 10, this.y * 30 + 20, 10, 10);
+        rect(this.x * 30 + 10, this.y * 30 + 20, 10, 10, 30);
     }
 }
