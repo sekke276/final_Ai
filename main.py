@@ -1,1 +1,1 @@
-print("cho Tri")
+print("chó Trĩ")
