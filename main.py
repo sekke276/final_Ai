@@ -1,1 +1,2 @@
-print("chó Trĩ")
+while True:
+  print("chó Trĩ leader như cc")
