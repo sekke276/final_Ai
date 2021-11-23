@@ -3,10 +3,11 @@ import random
 import time
 from enum import Enum
 from collections import namedtuple
+from astar import *
 
 pygame.init()
 font = pygame.font.Font('arial.ttf', 25)
-#font = pygame.font.SysFont('arial', 25)
+# font = pygame.font.SysFont('arial', 25)
 
 
 class Direction(Enum):
@@ -44,7 +45,6 @@ class SnakeGame:
 
         self.head = Point(self.w/2, self.h/2)
         self.snake = [self.head,
-                      self.head, self.head,
                       Point(self.head.x-BLOCK_SIZE, self.head.y),
                       Point(self.head.x-(2*BLOCK_SIZE), self.head.y),
                       ]
@@ -60,21 +60,47 @@ class SnakeGame:
         if self.food in self.snake:
             self._place_food()
 
+    def convert(self, point):
+        x = point.x/20
+        y = point.y/20
+
+        return (x, y)
+
     def play_step(self):
         # 1. collect user input
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    self.direction = Direction.LEFT
-                elif event.key == pygame.K_RIGHT:
-                    self.direction = Direction.RIGHT
-                elif event.key == pygame.K_UP:
-                    self.direction = Direction.UP
-                elif event.key == pygame.K_DOWN:
-                    self.direction = Direction.DOWN
+        # for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         pygame.quit()
+        #         quit()
+        #     if event.type == pygame.KEYDOWN:
+        #         if event.key == pygame.K_LEFT:
+        #             self.direction = Direction.LEFT
+        #         elif event.key == pygame.K_RIGHT:
+        #             self.direction = Direction.RIGHT
+        #         elif event.key == pygame.K_UP:
+        #             self.direction = Direction.UP
+        #         elif event.key == pygame.K_DOWN:
+        #             self.direction = Direction.DOWN
+
+        path = self.astar()
+
+        direction = tuple(
+            map(lambda i, j: i - j, path[1], self.convert(self.head)))
+
+        print(direction)
+
+        if direction == (0.0, -1.0):
+            self.direction = Direction.UP
+            print("up")
+        elif direction == (0.0, 1.0):
+            self.direction = Direction.DOWN
+            print("down")
+        elif direction == (-1.0, 0.0):
+            self.direction = Direction.LEFT
+            print("left")
+        elif direction == (1.0, 0.0):
+            self.direction = Direction.RIGHT
+            print("right")
 
         # 2. move
         self._move(self.direction)  # update the head (remove the last head)
@@ -91,7 +117,7 @@ class SnakeGame:
         if self.head == self.food:
             self.score += 1
             self._place_food()
-            self.snake.pop()  # the snake never increase
+            # self.snake.pop()  # the snake never increase
         else:
             self.snake.pop()
 
@@ -104,9 +130,11 @@ class SnakeGame:
     def _is_collision(self):
         # hits boundary
         if self.head.x > self.w - BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
+            print("cham vo vien", self.snake)
             return True
         # hits itself
         if self.head in self.snake[1:]:
+            print("cham vo nguoi", self.snake)
             return True
 
         return False
@@ -139,15 +167,23 @@ class SnakeGame:
         elif direction == Direction.UP:
             y -= BLOCK_SIZE
         self.head = Point(x, y)
+        time.sleep(0.1)
         print(self.snake)
-        time.sleep(1)
+
+    def astar(self):
+        start = (int(self.head.x/20), int(self.head.y/20))
+        end = (int(self.food.x/20), int(self.food.y/20))
+        path = get_path(start, end, self.snake)
+        return path
 
 
 if __name__ == '__main__':
+
     game = SnakeGame()
 
     # game loop
     while True:
+
         game_over, score = game.play_step()
 
         if game_over == True:
