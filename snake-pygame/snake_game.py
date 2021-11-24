@@ -50,8 +50,10 @@ class SnakeGame:
                       ]
 
         self.score = 0
+        self.count = 0
         self.food = None
         self._place_food()
+        self.path = self.astar()
 
     def _place_food(self):
         x = random.randint(0, (self.w-BLOCK_SIZE)//BLOCK_SIZE)*BLOCK_SIZE
@@ -82,12 +84,26 @@ class SnakeGame:
         #         elif event.key == pygame.K_DOWN:
         #             self.direction = Direction.DOWN
 
-        path = self.astar()
-
+        if self.count == 0:
+            self.path = self.astar()
+        self.count = self.count + 1
         direction = tuple(
-            map(lambda i, j: i - j, path[1], self.convert(self.head)))
+            map(lambda i, j: i - j, self.path[self.count], self.convert(self.head)))
 
-        print(direction)
+        print("Len", len(self.path))
+        print("Count", self.count)
+
+        if self.count == len(self.path)-1:
+            print("Next")
+            next_move = Point(0, 0)
+        else:
+            next_move = Point(self.path[self.count+1][0]
+                              * 20, self.path[self.count+1][1]*20)
+
+        if self._is_collision2(next_move):
+            self.path = self.astar()
+            direction = tuple(
+                map(lambda i, j: i - j, self.path[self.count], self.convert(self.head)))
 
         if direction == (0.0, -1.0):
             self.direction = Direction.UP
@@ -117,6 +133,8 @@ class SnakeGame:
         if self.head == self.food:
             self.score += 1
             self._place_food()
+            self.path = self.astar()
+            self.count = 0
             # self.snake.pop()  # the snake never increase
         else:
             self.snake.pop()
@@ -125,6 +143,7 @@ class SnakeGame:
         self._update_ui()
         self.clock.tick(SPEED)
         # 6. return game over and score
+
         return game_over, self.score
 
     def _is_collision(self):
@@ -134,6 +153,18 @@ class SnakeGame:
             return True
         # hits itself
         if self.head in self.snake[1:]:
+            print("cham vo nguoi", self.snake)
+            return True
+
+        return False
+
+    def _is_collision2(self, move):
+        # hits boundary
+        if move.x > self.w - BLOCK_SIZE or move.x < 0 or move.y > self.h - BLOCK_SIZE or move.y < 0:
+            print("cham vo vien", self.snake)
+            return True
+        # hits itself
+        if move in self.snake[1:]:
             print("cham vo nguoi", self.snake)
             return True
 
@@ -167,8 +198,9 @@ class SnakeGame:
         elif direction == Direction.UP:
             y -= BLOCK_SIZE
         self.head = Point(x, y)
-        time.sleep(0.1)
+
         print(self.snake)
+        print("Thuc an", self.food)
 
     def astar(self):
         start = (int(self.head.x/20), int(self.head.y/20))
@@ -183,7 +215,6 @@ if __name__ == '__main__':
 
     # game loop
     while True:
-
         game_over, score = game.play_step()
 
         if game_over == True:

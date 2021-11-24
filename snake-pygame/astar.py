@@ -30,6 +30,8 @@ def astar(maze, start, end):
     # Add the start node
     open_list.append(start_node)
 
+    print("Open list", open_list)
+
     # Loop until you find the end
     while len(open_list) > 0:
 
@@ -104,9 +106,7 @@ def get_path(start, end, snake):
 
     maze = [[0 for i in range(24)] for i in range(32)]
 
-    
-
-    print(snake)
+    # print(snake)
 
     for block in snake[1:]:
         x = int(block.x/20)
@@ -115,6 +115,9 @@ def get_path(start, end, snake):
         print("Toa do x: ", x, " y: ", y)
 
     path = astar(maze, start, end)
+
+    if path == []:
+        print("Failed")
 
     print(path)
     return path
