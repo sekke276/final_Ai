@@ -62,8 +62,8 @@ class SnakeGame:
             self._place_food()
 
     def convert(self, point):
-        x = point.x/20
-        y = point.y/20
+        x = point.x/BLOCK_SIZE
+        y = point.y/BLOCK_SIZE
 
         return (x, y)
 
@@ -83,13 +83,14 @@ class SnakeGame:
         #         elif event.key == pygame.K_DOWN:
         #             self.direction = Direction.DOWN
 
-        path = self.astar()
+        path = self.astar()  # call the a star algorithm
 
         direction = tuple(
-            map(lambda i, j: i - j, path[1], self.convert(self.head)))
+            map(lambda i, j: i - j, path[1], self.convert(self.head)))  # get the next move
 
         print(direction)
 
+        # set the direction
         if direction == (0.0, -1.0):
             self.direction = Direction.UP
             print("up")
@@ -131,11 +132,11 @@ class SnakeGame:
     def _is_collision(self):
         # hits boundary
         if self.head.x > self.w - BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
-            print("cham vo vien", self.snake)
+            print("Touch the boundary", self.snake)
             return True
         # hits itself
         if self.head in self.snake[1:]:
-            print("cham vo nguoi", self.snake)
+            print("Touch the body", self.snake)
             return True
 
         return False
@@ -171,9 +172,10 @@ class SnakeGame:
         print(self.snake)
 
     def astar(self):
-        start = (int(self.head.x/20), int(self.head.y/20))
-        end = (int(self.food.x/20), int(self.food.y/20))
-        path = get_path(start, end, self.snake)
+        start = (int(self.head.x/BLOCK_SIZE), int(self.head.y/BLOCK_SIZE))
+        end = (int(self.food.x/BLOCK_SIZE), int(self.food.y/BLOCK_SIZE))
+        path = get_path(start, end, self.snake)  # call algorithm
+
         return path
 
 

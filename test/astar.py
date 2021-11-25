@@ -1,4 +1,8 @@
 
+
+BLOCK_SIZE = 20
+
+
 class Node():
     """A node class for A* Pathfinding"""
 
@@ -102,11 +106,12 @@ def get_path(start, end, snake):
 
     print(snake)
 
+    # set up block for snake body
     for block in snake[1:]:
-        x = int(block.x/20)
-        y = int(block.y/20)
+        x = int(block.x/BLOCK_SIZE)
+        y = int(block.y/BLOCK_SIZE)
         maze[x][y] = 1
-        print("Toa do x: ", x, " y: ", y)
+        print("X block: ", x, "Y block: ", y)
 
     path = astar(maze, start, end)
 
