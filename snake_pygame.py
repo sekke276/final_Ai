@@ -1,14 +1,11 @@
 import pygame
 import random
-import time
-import asyncio
 from enum import Enum
 from collections import namedtuple
 from astar import *
 
 pygame.init()
 font = pygame.font.Font('arial.ttf', 25)
-# font = pygame.font.SysFont('arial', 25)
 
 
 class Direction(Enum):
@@ -22,9 +19,9 @@ Point = namedtuple('Point', 'x, y')
 
 # rgb colors
 WHITE = (255, 255, 255)
-RED = (200, 0, 0)
-BLUE1 = (0, 0, 255)
-BLUE2 = (0, 100, 255)
+YELLOW = (255, 255, 0)
+BLUE1 = (0, 255, 0)
+BLUE2 = (0, 255, 153)
 BLACK = (0, 0, 0)
 
 BLOCK_SIZE = 20
@@ -36,12 +33,11 @@ class SnakeGame:
     def __init__(self, w=640, h=480):
         self.w = w
         self.h = h
-        # init display
+
         self.display = pygame.display.set_mode((self.w, self.h))
         pygame.display.set_caption('Snake')
         self.clock = pygame.time.Clock()
 
-        # init game state
         self.direction = Direction.RIGHT
 
         self.head = Point(self.w/2, self.h/2)
@@ -61,75 +57,60 @@ class SnakeGame:
         if self.food in self.snake:
             self._place_food()
 
-    def convert(self, point):
+    def _convert(self, point):
         x = point.x/BLOCK_SIZE
         y = point.y/BLOCK_SIZE
 
         return (x, y)
 
-    def play_step(self):
-        # 1. collect user input
-        # for event in pygame.event.get():
-        #     if event.type == pygame.QUIT:
-        #         pygame.quit()
-        #         quit()
-        #     if event.type == pygame.KEYDOWN:
-        #         if event.key == pygame.K_LEFT:
-        #             self.direction = Direction.LEFT
-        #         elif event.key == pygame.K_RIGHT:
-        #             self.direction = Direction.RIGHT
-        #         elif event.key == pygame.K_UP:
-        #             self.direction = Direction.UP
-        #         elif event.key == pygame.K_DOWN:
-        #             self.direction = Direction.DOWN
+    def _step(self):
 
         path = self.astar()  # call the a star algorithm
 
-        direction = tuple(
-            map(lambda i, j: i - j, path[1], self.convert(self.head)))  # get the next move
+        if path == None:
+            game_over = True
+            return game_over, self.score
 
-        print(direction)
+        direction = tuple(
+            map(lambda i, j: i - j, path[1], self._convert(self.head)))  # get the next move
 
         # set the direction
         if direction == (0.0, -1.0):
             self.direction = Direction.UP
-            print("up")
         elif direction == (0.0, 1.0):
             self.direction = Direction.DOWN
-            print("down")
         elif direction == (-1.0, 0.0):
             self.direction = Direction.LEFT
-            print("left")
         elif direction == (1.0, 0.0):
             self.direction = Direction.RIGHT
-            print("right")
 
-        # 2. move
-        self._move(self.direction)  # update the head (remove the last head)
+        self._move(self.direction)
 
-        self.snake.insert(0, self.head)  # insert the upbove head
+        self.snake.insert(0, self.head)
 
-        # 3. check if game over
+        # check if game over
         game_over = False
-        if self._is_collision():
+        if self._is_hit():
             game_over = True
             return game_over, self.score
 
-        # 4. place new food or just move
+        # place new food or just move
         if self.head == self.food:
             self.score += 1
             self._place_food()
-            # self.snake.pop()  # the snake never increase
+
         else:
             self.snake.pop()
 
-        # 5. update ui and clock
-        self._update_ui()
+        # update ui and clock
+
+        self._update_screen()
         self.clock.tick(SPEED)
-        # 6. return game over and score
+
+        # return game over and score
         return game_over, self.score
 
-    def _is_collision(self):
+    def _is_hit(self):
         # hits boundary
         if self.head.x > self.w - BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
             print("Touch the boundary", self.snake)
@@ -141,7 +122,7 @@ class SnakeGame:
 
         return False
 
-    def _update_ui(self):
+    def _update_screen(self):
         self.display.fill(BLACK)
 
         for pt in self.snake:
@@ -150,11 +131,12 @@ class SnakeGame:
             pygame.draw.rect(self.display, BLUE2,
                              pygame.Rect(pt.x+4, pt.y+4, 12, 12))
 
-        pygame.draw.rect(self.display, RED, pygame.Rect(
+        pygame.draw.rect(self.display, YELLOW, pygame.Rect(
             self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
 
         text = font.render("Score: " + str(self.score), True, WHITE)
         self.display.blit(text, [0, 0])
+
         pygame.display.flip()
 
     def _move(self, direction):
@@ -169,7 +151,6 @@ class SnakeGame:
         elif direction == Direction.UP:
             y -= BLOCK_SIZE
         self.head = Point(x, y)
-        print(self.snake)
 
     def astar(self):
         start = (int(self.head.x/BLOCK_SIZE), int(self.head.y/BLOCK_SIZE))
@@ -186,7 +167,7 @@ if __name__ == '__main__':
     # game loop
     while True:
 
-        game_over, score = game.play_step()
+        game_over, score = game._step()
 
         if game_over == True:
             break
